@@ -1,10 +1,12 @@
 #include <SPI.h>
 #include <MFRC522.h>
+#include <Keypad.h>
 #define SS_PIN 53
 #define RST_PIN 49
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 
+// -------------- RFID -------------- 
 byte LecturaUID[4];         // Almacena el UID leido
 byte Usuario1[4]= {0xC0, 0xFD, 0x4C, 0xA8} ;    // UID de tarjeta
 byte Usuario2[4]= {0x06, 0x76, 0x25, 0xD9} ;   
@@ -12,6 +14,24 @@ byte Usuario2[4]= {0x06, 0x76, 0x25, 0xD9} ;
 const int ledRojoPIN = 48;
 const int ledVerdePIN = 47;
 
+// -------------- Keypad  -------------- 
+
+const byte FILAS = 4;
+const byte COLUMNAS = 4;
+
+char keys[FILAS][COLUMNAS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+byte pinesFilas[FILAS] = {39,38,37,36};
+byte pinesColumnas[COLUMNAS] = {35,34,33,32};
+
+Keypad teclado = Keypad(makeKeymap(keys), pinesFilas, pinesColumnas, FILAS, COLUMNAS);
+
+// -------------- Programa -------------- 
 void setup() {
   Serial.begin(9600);  
   SPI.begin();      
