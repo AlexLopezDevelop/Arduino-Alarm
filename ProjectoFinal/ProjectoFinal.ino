@@ -1,3 +1,5 @@
+#include <LiquidCrystal.h>
+
 #include <SPI.h>
 #include <MFRC522.h>
 #include <Keypad.h>
@@ -52,6 +54,11 @@ long tiempo;
 
 int SenMov = 25;
 
+// -------------- LCD -------------- 
+
+LiquidCrystal lcd(7,6,5,4,3,2);
+int countDown = 30;
+
 // -------------- Programa -------------- 
 
 int alarmaActivada = 0;
@@ -61,6 +68,8 @@ void setup() {
   SPI.begin();      
   
   mfrc522.PCD_Init();   
+
+  lcd.begin(16,2);
 
   pinMode(31, OUTPUT); // Definimos el pin 8 como salida del zumbador.
    
@@ -80,6 +89,8 @@ void setup() {
   digitalWrite(ledVerdePIN, LOW); 
   
   Serial.println("Introducir RFID");
+  lcd.setCursor(0,0);
+  lcd.print("Introducir RFID");
   Serial.print("\n");         // Salto de linea   
 }
 
@@ -104,29 +115,59 @@ void loop() {
           }
           
           Serial.print("\n");         // Salto de linea             
-                    
+ 
           if(comparaUID(LecturaUID, Usuario1)){
             Serial.println("Bienvenido Usuario 1, introduce la contraseña");
             Serial.print("\n");         // Salto de linea  
+            lcd.setCursor(0,0);
+            lcd.print("Hola User1       ");
+            lcd.setCursor(0,1);
+            lcd.print("Introducir pass:");
             while (entrarPassword() != 1) { //Mirar hasta que introduzca la contraseña correcta
               }
           } else if(comparaUID(LecturaUID, Usuario2)){
             Serial.println("Bienvenido Usuario 2, introduce la contraseña");
             Serial.print("\n");         // Salto de linea 
+            lcd.setCursor(0,0);
+            lcd.print("Hola User2       ");
+            lcd.setCursor(0,1);
+            lcd.print("Introducir pass:  ");
             while (entrarPassword() != 1) { //Mirar hasta que introduzca la contraseña correcta
               } 
           }else {
-            Serial.println("RFID No valido");          
+            Serial.println("RFID No valido");
+            lcd.setCursor(0,0);
+            lcd.print("RFID No valido "); 
           }       
                   mfrc522.PICC_HaltA();     // detiene comunicacion con tarjeta  
 
-          while (alarmaActivada == 1) { // Mientras la alarma este activada
+          while (alarmaActivada == 1) {
+                        lcd.setCursor(0,1);
+            lcd.print(millis() / 1000);
+            lcd.print(" seg.      ");// Mientras la alarma este activada
             ultrasonidos();
             sensorMovimiento();
           }
 }
 
 int entrarPassword() {
+
+lcd.setCursor(0,0);
+            lcd.print("Introducir pass:");
+            lcd.setCursor(0,1);
+            lcd.print("                 ");
+  
+  if (INDICE == 1) {
+            lcd.setCursor(0,1);
+            lcd.print("*          ");
+  }else if (INDICE == 2) {
+            lcd.setCursor(0,1);
+            lcd.print("**         ");
+  }else if (INDICE == 3) {
+    lcd.setCursor(0,1);
+            lcd.print("***        ");
+  }
+  
     TECLA = teclado.getKey();
   
   if (TECLA) {
@@ -139,13 +180,28 @@ int entrarPassword() {
     if (!strcmp(CLAVE, CLAVE_MAESTRA)){
             digitalWrite(ledVerdePIN, HIGH);
             digitalWrite(ledRojoPIN, LOW); 
+            lcd.setCursor(0,0);
+            lcd.print("Activando Alarma ");
+            millis() = 0;
+            while (countDown != 0){
+              lcd.setCursor(0,1);
+              lcd.print("En ");
+              countDown = 30 - (millis() / 1000);
+              lcd.print(countDown);
+              lcd.print(" seg.");
+            }
+          
             Serial.print("\n");         // Salto de linea  
-            Serial.println("Alarma Activada"); 
+            Serial.println("Alarma Activada ");    
+            lcd.setCursor(0,0);
+            lcd.print("Alarma Activada ");
             alarmaActivada = 1;
       return 1;
     } else {
       Serial.print("\n");         // Salto de linea  
       Serial.println("Contraseña Incorrecta");
+      lcd.setCursor(0,0);
+            lcd.print("Contraseña Erronea");
       INDICE = 0;
     }
   }
